@@ -31,7 +31,7 @@ namespace AspNetCoreRealtimeBinary.HostedServices
             {
                 byte[] imageData = GenerateImage();
                 await hubContext.Clients.All.ReceiveImage(imageData);
-                await Task.Delay(100000, cancellationToken);
+                await Task.Delay(1000, cancellationToken);
             }
         }
 
