@@ -6,35 +6,36 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Hosting;
 using SkiaSharp;
 
-namespace AspNetCoreRealtimeBinary
+namespace AspNetCoreRealtimeBinary.HostedServices
 {
     public class ImageGenerator : IHostedService
     {
-        private readonly IHubContext<ImageStreamHub> hub;
+        private readonly IHubContext<ImageStreamHub, IImageStreamClient> hubContext;
         private readonly CancellationTokenSource tokenSource;
-        public ImageGenerator(IHubContext<ImageStreamHub> hub)
+        private Task imageGenerationTask;
+        public ImageGenerator(IHubContext<ImageStreamHub, IImageStreamClient> hubContext)
         {
-            this.hub = hub;
+            this.hubContext = hubContext;
             this.tokenSource = new CancellationTokenSource();
         }
 
         public Task StartAsync(CancellationToken cancellationToken)
         {
-            Task.Run(GenerateImages, tokenSource.Token);
+            imageGenerationTask = GenerateImages(hubContext, tokenSource.Token);
             return Task.CompletedTask;
         }
 
-        private async Task GenerateImages()
+        private static async Task GenerateImages(IHubContext<ImageStreamHub, IImageStreamClient> hubContext, CancellationToken cancellationToken)
         {
-            while(!tokenSource.Token.IsCancellationRequested)
+            while(!cancellationToken.IsCancellationRequested)
             {
-                await Task.Delay(1000);
-                byte[] image = GenerateImage();
-                await hub.Clients.All.SendAsync("ReceiveImage", image);
+                byte[] imageData = GenerateImage();
+                await hubContext.Clients.All.ReceiveImage(imageData);
+                await Task.Delay(100000, cancellationToken);
             }
         }
 
-        private byte[] GenerateImage()
+        private static byte[] GenerateImage()
         {
             using (SKBitmap bitmap = new SKBitmap(width: 200, height: 200))
             {
@@ -64,7 +65,7 @@ namespace AspNetCoreRealtimeBinary
         public Task StopAsync(CancellationToken cancellationToken)
         {
             tokenSource.Cancel();
-            return Task.CompletedTask;
+            return imageGenerationTask ?? Task.CompletedTask;
         }
     }
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AspNetCoreRealtimeBinary.Hubs;
+using AspNetCoreRealtimeBinary.HostedServices;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -26,13 +27,7 @@ namespace AspNetCoreRealtimeBinary
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.Configure<CookiePolicyOptions>(options =>
-            {
-                // This lambda determines whether user consent for non-essential cookies is needed for a given request.
-                options.CheckConsentNeeded = context => true;
-                options.MinimumSameSitePolicy = SameSiteMode.None;
-            });
-
+            //Per la demo: registrare SignalR e l'hosted service
             services.AddSignalR().AddMessagePackProtocol();
             services.AddHostedService<ImageGenerator>();
 
@@ -56,12 +51,13 @@ namespace AspNetCoreRealtimeBinary
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
-            app.UseCookiePolicy();
 
+            //Per la demo: registrazione del middleware di SignalR
             app.UseSignalR((configure) =>
             {
                 configure.MapHub<ImageStreamHub>("/image-stream", options => {
-                    options.ApplicationMaxBufferSize = 256 * 1024; //256KB max image size
+                    //Limite di peso massimo dell'immagine da inviare al client
+                    options.ApplicationMaxBufferSize = 256 * 1024; //256KB
                 });
             });
 
