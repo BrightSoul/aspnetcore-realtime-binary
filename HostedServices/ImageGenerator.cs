@@ -8,7 +8,7 @@ using SkiaSharp;
 
 namespace AspNetCoreRealtimeBinary.HostedServices
 {
-    public class ImageGenerator : IHostedService
+    public class ImageGenerator : BackgroundService
     {
         private readonly IHubContext<ImageStreamHub, IImageStreamClient> hubContext;
         private readonly CancellationTokenSource tokenSource;
@@ -19,19 +19,13 @@ namespace AspNetCoreRealtimeBinary.HostedServices
             this.tokenSource = new CancellationTokenSource();
         }
 
-        public Task StartAsync(CancellationToken cancellationToken)
+        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            imageGenerationTask = GenerateImages(hubContext, tokenSource.Token);
-            return Task.CompletedTask;
-        }
-
-        private static async Task GenerateImages(IHubContext<ImageStreamHub, IImageStreamClient> hubContext, CancellationToken cancellationToken)
-        {
-            while(!cancellationToken.IsCancellationRequested)
+            while(!stoppingToken.IsCancellationRequested)
             {
                 byte[] imageData = GenerateImage();
                 await hubContext.Clients.All.ReceiveImage(imageData);
-                await Task.Delay(1000, cancellationToken);
+                await Task.Delay(1000, stoppingToken);
             }
         }
 
@@ -60,12 +54,6 @@ namespace AspNetCoreRealtimeBinary.HostedServices
                     }
                 }
             }
-        }
-
-        public Task StopAsync(CancellationToken cancellationToken)
-        {
-            tokenSource.Cancel();
-            return imageGenerationTask ?? Task.CompletedTask;
         }
     }
 }
