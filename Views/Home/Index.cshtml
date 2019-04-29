@@ -12,15 +12,24 @@ let connection = new signalR.HubConnectionBuilder()
     .withUrl("/image-stream")
     .withHubProtocol(new signalR.protocols.msgpack.MessagePackHubProtocol())
     .build();
- 
+
+let previousObjectURL;
 connection.on('ReceiveImage', data => {
-    var blob = new Blob([data], {type: "image/png"});
-    var reader = new FileReader();
-    reader.onload = function(event) {
-	    var dataUrl = event.target.result;
-        document.getElementById('targetImage').src = dataUrl;
-    };
-    reader.readAsDataURL(blob);
+    //Creo un blob a partire dai dati binari che ho ricevuto
+    //La variabile data è di tipo Uint8Array
+    const blob = new Blob([data], {type: "image/png"});
+    
+    //Creo un URL per il blob, così che si possa assegnare alla proprietà src di un elemento IMG
+    const currentObjectURL = URL.createObjectURL(blob);
+    document.getElementById('targetImage').src = currentObjectURL;
+
+    //Dealloco l'URL generato precedentemente, così da evitare dei memory leak.
+    if (previousObjectURL) {
+        URL.revokeObjectURL(previousObjectURL);
+    }
+
+    //Conservo il riferimento all'URL che ho generato poco fa, così che lo si possa deallocare poi
+    previousObjectURL = currentObjectURL;
 });
  
 connection.start();
