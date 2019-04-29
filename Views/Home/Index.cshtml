@@ -1,8 +1,12 @@
 ﻿@{
     ViewData["Title"] = "Home Page";
 }
+<div>
+    <button type="button" id="startButton" disabled>Start</button>
+    <button type="button" id="stopButton" disabled>Stop</button>
+</div>
 
-<img id="targetImage" src="" width="200" height="200" style="border: 1px solid black" />
+<img id="targetImage" src="/images/info.png" width="200" height="200" style="border: 1px solid black" />
 
 <script src="https://cdn.jsdelivr.net/npm/@@aspnet/signalr@1.1.4/dist/browser/signalr.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/msgpack5@4.2.1/dist/msgpack5.min.js"></script>
@@ -12,6 +16,12 @@ let connection = new signalR.HubConnectionBuilder()
     .withUrl("/image-stream")
     .withHubProtocol(new signalR.protocols.msgpack.MessagePackHubProtocol())
     .build();
+
+connection.on('NotifyStatusChange', newStatus => {
+    const isPlaying = newStatus == 'streaming';
+    document.getElementById('startButton').disabled = isPlaying;
+    document.getElementById('stopButton').disabled = !isPlaying;
+});
 
 let previousObjectURL;
 connection.on('ReceiveImage', data => {

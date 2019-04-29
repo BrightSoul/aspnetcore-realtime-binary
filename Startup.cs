@@ -30,7 +30,7 @@ namespace AspNetCoreRealtimeBinary
             //Per la demo: registrare SignalR e l'hosted service
             services.AddSignalR().AddMessagePackProtocol();
             services.AddHostedService<ImageGenerator>();
-
+            services.AddSingleton<IImageGenerator>(serviceProvider => serviceProvider.GetService<ImageGenerator>());
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
         }
