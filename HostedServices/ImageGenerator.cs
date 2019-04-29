@@ -11,12 +11,9 @@ namespace AspNetCoreRealtimeBinary.HostedServices
     public class ImageGenerator : BackgroundService
     {
         private readonly IHubContext<ImageStreamHub, IImageStreamClient> hubContext;
-        private readonly CancellationTokenSource tokenSource;
-        private Task imageGenerationTask;
         public ImageGenerator(IHubContext<ImageStreamHub, IImageStreamClient> hubContext)
         {
             this.hubContext = hubContext;
-            this.tokenSource = new CancellationTokenSource();
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
