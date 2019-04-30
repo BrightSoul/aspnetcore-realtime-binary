@@ -7,7 +7,7 @@ Questa è un'applicazione ASP.NET Core che dimostra come usare ASP.NET Core Sign
 ## Panoramica
 Nell'applicazione c'è un _hosted service_ che ogni secondo genera un'immagine PNG che reca l'ora corrente e un colore di sfondo casuale. L'immagine così generata viene inviata ai client connessi grazie a un _hub_ di ASP.NET Core SignalR, configurato per sfruttare il trasporto binario [MessagePack](https://msgpack.org/).
 
-L'invio delle immagini avviene solo se è stato cliccato un apposito **bottone Start**, e può essere interrotta con un **bottone Stop**.
+L'invio delle immagini avviene solo se è stato cliccato un apposito **bottone Start**, e può essere interrotta con un **bottone Stop**. Attenzione! In questa demo, il cambiamento di stato (da _started_ a _stopped_ o viceversa) ha effetto su tutti i client connessi, come si vede in questa immagine.
 
 ![demo.gif](demo.gif)
 
