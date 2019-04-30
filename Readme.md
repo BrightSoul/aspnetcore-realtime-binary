@@ -27,6 +27,9 @@ L'esecuzione di attività in background per mezzo di _hosted service_ è anche d
  4. Aggiunto il pacchetto NuGet `Nito.AsyncEx` usato come supporto per realizzare la funzionalità Start/Stop in maniera asincrona nel file [Models/Services/Infrastructure/TaskStartStop.cs](Models/Services/Infrastructure/TaskStartStop.cs);
 
  5. Creata la classe [Hubs/ImageStreamHub.cs](Hubs/ImageStreamHub.cs) che è l'_hub_ di ASP.NET Core SignalR usato per inviare dati binari ai client;
+     * L'_hub_ contiene i metodi _Start_ e _Stop_ che saranno invocati dai client JavaScript;
+     * L'_hub_ traccia connessioni e disconnessioni dei client. In questo modo, alla connessione di un client può inviargli lo stato corrente (_started_ o _stopped_), così che l'interfaccia HTML sia coerente con lo stato attuale del sistema. Inoltre, alla disconnessione, se non ci sono più client connessi fa uno _Stop_ automatico per evitare sprechi di risorse;
+     * Ogni qualvolta lo stato cambia (da _started_ a _stopped_ o viceversa), notifica i client di questo cambiamento.
 
  6. Creata anche l'interfaccia [Hubs/IImageStreamClient.cs](Hubs/IImageStreamClient.cs) che viene implementata dall'_hub_ in modo che si possa invocare la funzione JavaScript sul client in maniera fortemente tipizzata;
  
