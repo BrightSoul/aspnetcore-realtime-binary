@@ -2,8 +2,8 @@
     ViewData["Title"] = "Home Page";
 }
 <div>
-    <button type="button" id="startButton" disabled>Start</button>
-    <button type="button" id="stopButton" disabled>Stop</button>
+    <button type="button" class="command" id="startButton" onclick="start()" disabled>Start</button>
+    <button type="button" class="command" id="stopButton" onclick="stop()" disabled>Stop</button>
 </div>
 
 <img id="targetImage" src="/images/info.png" width="200" height="200" style="border: 1px solid black" />
@@ -18,9 +18,11 @@ let connection = new signalR.HubConnectionBuilder()
     .build();
 
 connection.on('NotifyStatusChange', newStatus => {
-    const isPlaying = newStatus == 'streaming';
-    document.getElementById('startButton').disabled = isPlaying;
-    document.getElementById('stopButton').disabled = !isPlaying;
+    console.log("Lo stato è cambiato in: ", newStatus);
+
+    const isStarted = newStatus == 'started';
+    document.getElementById('startButton').disabled = isStarted;
+    document.getElementById('stopButton').disabled = !isStarted;
 });
 
 let previousObjectURL;
@@ -43,4 +45,39 @@ connection.on('ReceiveImage', data => {
 });
  
 connection.start();
+
+function start() {
+    connection.invoke("Start").catch(err => alert("Non è stato possibile fare Start. Motivo: " + err.toString()));
+}
+
+function stop() {
+    connection.invoke("Stop").catch(err => alert("Non è stato possibile fare Stop. Motivo: " + err.toString()));
+}
 </script>
+
+<style>
+    .command[disabled] {
+        opacity: 0.3;
+        filter: saturate(40%);
+        cursor: not-allowed;
+    }
+    .command:not([disabled]):hover {
+        filter: brightness(140%);
+    }
+    .command {
+        cursor: pointer;
+        width: 88px;
+        border: none;
+        border-radius: 5px;
+        color: white;
+        margin: 0 20px 20px 0;
+        padding: 5px 0;
+        box-sizing: border-box;
+    }
+    #startButton {
+        background-color: green;
+    }
+    #stopButton {
+        background-color: #c32222;
+    }
+</style>

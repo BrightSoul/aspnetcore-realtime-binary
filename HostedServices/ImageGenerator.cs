@@ -2,29 +2,28 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using AspNetCoreRealtimeBinary.Hubs;
+using AspNetCoreRealtimeBinary.Models.Services.Infrastructure;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Hosting;
 using SkiaSharp;
 
 namespace AspNetCoreRealtimeBinary.HostedServices
 {
-    public class ImageGenerator : BackgroundService, IImageGenerator
+    public class ImageGenerator : BackgroundService
     {
         private readonly IHubContext<ImageStreamHub, IImageStreamClient> hubContext;
-        private readonly ManualResetEventSlim manualResetEvent;
-        private const string STATUS_STREAMING = "streaming";
-        private const string STATUS_IDLE = "idle";
-        public ImageGenerator(IHubContext<ImageStreamHub, IImageStreamClient> hubContext)
+        private readonly ITaskStartStop taskStartStop;
+
+        public ImageGenerator(IHubContext<ImageStreamHub, IImageStreamClient> hubContext, ITaskStartStop taskStartStop)
         {
             this.hubContext = hubContext;
-            this.manualResetEvent = new ManualResetEventSlim(false);
+            this.taskStartStop = taskStartStop;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            while(!stoppingToken.IsCancellationRequested)
+            while(await taskStartStop.ShouldExecute(stoppingToken))
             {
-                manualResetEvent.Wait(stoppingToken);
                 byte[] imageData = GenerateImage();
                 await hubContext.Clients.All.ReceiveImage(imageData);
                 await Task.Delay(1000, stoppingToken);
@@ -56,32 +55,6 @@ namespace AspNetCoreRealtimeBinary.HostedServices
                     }
                 }
             }
-        }
-
-        private string currentStatus = STATUS_IDLE;
-        public async Task StartStreaming()
-        {
-            string previousValue = Interlocked.CompareExchange(ref currentStatus, STATUS_STREAMING, STATUS_IDLE);
-            if (previousValue == STATUS_IDLE)
-            {
-                manualResetEvent.Set();
-                await hubContext.Clients.All.NotifyStatusChange(STATUS_STREAMING);
-            }
-        }
-
-        public async Task StopStreaming()
-        {
-            string previousValue = Interlocked.CompareExchange(ref currentStatus, STATUS_IDLE, STATUS_STREAMING);
-            if (previousValue == STATUS_STREAMING)
-            {
-                manualResetEvent.Reset();
-                await hubContext.Clients.All.NotifyStatusChange(STATUS_IDLE);
-            }
-        }
-
-        public string GetCurrentStatus()
-        {
-            return Interlocked.CompareExchange(ref currentStatus, null, null);
         }
     }
 }

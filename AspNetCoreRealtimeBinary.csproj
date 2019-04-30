@@ -10,6 +10,7 @@
     <PackageReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="2.2.0" PrivateAssets="All" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.MessagePack" Version="1.1.0" />
+    <PackageReference Include="Nito.AsyncEx" Version="5.0.0" />
     <PackageReference Include="SkiaSharp" Version="1.68.0" />
   </ItemGroup>
 
