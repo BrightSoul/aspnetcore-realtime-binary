@@ -2,13 +2,15 @@
     ViewData["Title"] = "Home Page";
 }
 
-<img id="targetImage" src="" width="200" height="200" style="border: 1px solid black" />
+<img id="targetImage" src="/blank.gif" width="200" height="200" style="border: 1px solid black" />
 
+@section Scripts
+{
 <script src="https://cdn.jsdelivr.net/npm/@@aspnet/signalr@1.1.4/dist/browser/signalr.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/msgpack5@4.2.1/dist/msgpack5.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@@aspnet/signalr-protocol-msgpack@1.1.0/dist/browser/signalr-protocol-msgpack.min.js"></script>
 <script>
-let connection = new signalR.HubConnectionBuilder()
+const connection = new signalR.HubConnectionBuilder()
     .withUrl("/image-stream")
     .withHubProtocol(new signalR.protocols.msgpack.MessagePackHubProtocol())
     .build();
@@ -34,3 +36,4 @@ connection.on('ReceiveImage', data => {
  
 connection.start();
 </script>
+}
